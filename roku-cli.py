@@ -3,7 +3,6 @@
 import requests
 import time
 import curses
-from curses import wrapper
 
 class RemoteKey:
 
@@ -14,35 +13,40 @@ class RemoteKey:
         self.y = y
         self.x = x
 
-ip = '192.168.1.1' # this is the ip of your roku
-base_url = 'http://' + ip + ':8060/keypress/'
-keys = {}
+class RokuRemote:
 
-def populate_keys():
-    keys['B'] = RemoteKey('X', 'Back', 'back', 1, 1)
-    keys['H'] = RemoteKey('H', 'Home', 'home', 1, 10)
+    def __init__(self, ip):
+        self.base_url = 'http://{}:8060/keypress/'.format(ip)
+        self.setup_keys()
 
-    # draw second row of keys
-    keys['R'] = RemoteKey('R', 'Repl', 'instantreplay', 4, 1)
-    keys['*'] = RemoteKey('*', 'Star', 'info', 4, 10)
+    def setup_keys(self):
+        self.keys = {}
 
-    # draw arrow keys
-    keys['KEY_UP'] = RemoteKey('KEY_UP', '^', 'up', 7, 7)
-    keys['KEY_LEFT'] = RemoteKey('KEY_LEFT', '<', 'left', 10, 1)
-    keys['\n'] = RemoteKey('\n', 'OK!', 'select', 10, 6)
-    keys['KEY_RIGHT'] = RemoteKey('KEY_RIGHT', '>', 'right', 10, 13)
-    keys['KEY_DOWN'] = RemoteKey('KEY_DOWN', 'v', 'down', 13, 7)
+        # first row
+        self.keys['b'] = RemoteKey('b', 'Back', 'back', 1, 1)
+        self.keys['h'] = RemoteKey('h', 'Home', 'home', 1, 10)
 
-    # draw third row of keys
-    keys['<'] = RemoteKey('<', '<<', 'rev', 16, 1)
-    keys['P'] = RemoteKey('P', 'P', 'play', 16, 7)
-    keys['>'] = RemoteKey('>', '>>', 'fwd', 16, 12)
+        # second row
+        self.keys['r'] = RemoteKey('r', 'Repl', 'instantreplay', 4, 1)
+        self.keys['*'] = RemoteKey('*', 'Star', 'info', 4, 10)
+
+        # arrow keys
+        self.keys['KEY_UP'] = RemoteKey('KEY_UP', '^', 'up', 7, 7)
+        self.keys['KEY_LEFT'] = RemoteKey('KEY_LEFT', '<', 'left', 10, 1)
+        self.keys['\n'] = RemoteKey('\n', 'OK!', 'select', 10, 6)
+        self.keys['KEY_RIGHT'] = RemoteKey('KEY_RIGHT', '>', 'right', 10, 13)
+        self.keys['KEY_DOWN'] = RemoteKey('KEY_DOWN', 'v', 'down', 13, 7)
+
+        # third row
+        self.keys['<'] = RemoteKey('<', '<<', 'rev', 16, 1)
+        self.keys['p'] = RemoteKey('p', 'P', 'play', 16, 7)
+        self.keys['>'] = RemoteKey('>', '>>', 'fwd', 16, 12)
 
 def draw_key(stdscr, key, pressed=False):
     color = 1 if not pressed else 2
     draw_rect_key(stdscr, key.y, key.x, key.label, color)
 
-def press_key(stdscr, key):
+def press_key(stdscr, key, base_url):
     draw_key(stdscr, key, True)
     stdscr.refresh()
     request_url = base_url + key.endpoint
@@ -68,36 +72,71 @@ def draw_rect_key(stdscr, y, x, text, colors):
 def status(stdscr):
     stdscr.addstr(20, 1, "~*~ roku-cli ~*~")
 
-def main(stdscr):
+def search_loop(stdscr, base_url):
+    # setup for search
+    stdscr.addstr(22, 1, '/')
+    min_x = 2
+    cur_x = min_x
+    stdscr.move(22, cur_x)
+    curses.curs_set(True)
+    while 1:
+        stdscr.refresh()
+        letter = stdscr.getkey()
+        if letter in ('\n', 'KEY_ESC'):
+            stdscr.move(22, 0)
+            stdscr.clrtoeol()
+            curses.curs_set(False)
+            return
+        elif letter == '\x7f':
+            if cur_x > min_x:
+                cur_x -= 1
+                stdscr.addstr(22, cur_x, " ")
+                stdscr.move(22, cur_x)
+                request_url = base_url + 'Backspace'
+        else:
+            stdscr.addstr(22, cur_x, letter)
+            cur_x += 1
+            request_url = base_url + 'Lit_' + letter
+        requests.post(request_url)
 
-    # clear the screen and hide the cursor
+def remote_loop(stdscr, remote):
+    while 1:
+        # draw all the keys
+        for k in remote.keys:
+            draw_key(stdscr, remote.keys[k])
+
+        # listen for an input
+        c = stdscr.getkey()
+
+        # if the input is in the mapped keys, press the key
+        if c in remote.keys:
+            press_key(stdscr, remote.keys[c], remote.base_url)
+        elif c == '/':
+            search_loop(stdscr, remote.base_url)
+        elif c == 'q':
+            break
+
+def main(stdscr, ip):
+
+    init_curses()
     stdscr.clear()
-    curses.curs_set(False)
 
-    # set the colors
-    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
-
-    # populate the keys
-    populate_keys()
+    # create the remote
+    remote = RokuRemote(ip)
 
     status(stdscr)
 
-    # loop forever
-    while 1:
+    remote_loop(stdscr, remote)
 
-        # draw all the keys
-        for k in keys:
-            draw_key(stdscr, keys[k])
+def init_curses():
+    # set up colors
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
-        # listen for an input
-        c = stdscr.getkey().upper()
+    # clear the screen and hide the cursor
+    curses.curs_set(False)
 
-        # if the input is in the mapped keys, press the key
-        if c in keys:
-            press_key(stdscr, keys[c])
-        elif c == 'Q':
-            break
             
-# main wrapper
-wrapper(main)
+if __name__ == '__main__':
+    ip = '192.168.1.1' # this is the ip of your roku
+    curses.wrapper(main, ip)
