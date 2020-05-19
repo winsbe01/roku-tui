@@ -27,15 +27,15 @@ class RokuRemote:
         self.keys['h'] = RemoteKey('h', 'Home', 'keypress/home', 1, 10)
 
         # second row
-        self.keys['r'] = RemoteKey('r', 'Repl', 'keypress/instantreplay', 4, 1)
-        self.keys['*'] = RemoteKey('*', 'Star', 'keypress/info', 4, 10)
+        self.keys['r'] = RemoteKey('r', 'Repl', 'keypress/instantreplay', 13, 1)
+        self.keys['*'] = RemoteKey('*', 'Star', 'keypress/info', 13, 10)
 
         # arrow keys
-        self.keys['KEY_UP'] = RemoteKey('KEY_UP', '^', 'keypress/up', 7, 7)
-        self.keys['KEY_LEFT'] = RemoteKey('KEY_LEFT', '<', 'keypress/left', 10, 1)
-        self.keys['\n'] = RemoteKey('\n', 'OK!', 'keypress/select', 10, 6)
-        self.keys['KEY_RIGHT'] = RemoteKey('KEY_RIGHT', '>', 'keypress/right', 10, 13)
-        self.keys['KEY_DOWN'] = RemoteKey('KEY_DOWN', 'v', 'keypress/down', 13, 7)
+        self.keys['KEY_UP'] = RemoteKey('KEY_UP', '^', 'keypress/up', 4, 7)
+        self.keys['KEY_LEFT'] = RemoteKey('KEY_LEFT', '<', 'keypress/left', 7, 1)
+        self.keys['\n'] = RemoteKey('\n', 'OK!', 'keypress/select', 7, 6)
+        self.keys['KEY_RIGHT'] = RemoteKey('KEY_RIGHT', '>', 'keypress/right', 7, 13)
+        self.keys['KEY_DOWN'] = RemoteKey('KEY_DOWN', 'v', 'keypress/down', 10, 7)
 
         # third row
         self.keys['<'] = RemoteKey('<', '<<', 'keypress/rev', 16, 1)
