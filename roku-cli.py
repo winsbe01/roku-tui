@@ -16,31 +16,31 @@ class RemoteKey:
 class RokuRemote:
 
     def __init__(self, ip):
-        self.base_url = 'http://{}:8060/keypress/'.format(ip)
+        self.base_url = 'http://{}:8060/'.format(ip)
         self.setup_keys()
 
     def setup_keys(self):
         self.keys = {}
 
         # first row
-        self.keys['b'] = RemoteKey('b', 'Back', 'back', 1, 1)
-        self.keys['h'] = RemoteKey('h', 'Home', 'home', 1, 10)
+        self.keys['b'] = RemoteKey('b', 'Back', 'keypress/back', 1, 1)
+        self.keys['h'] = RemoteKey('h', 'Home', 'keypress/home', 1, 10)
 
         # second row
-        self.keys['r'] = RemoteKey('r', 'Repl', 'instantreplay', 4, 1)
-        self.keys['*'] = RemoteKey('*', 'Star', 'info', 4, 10)
+        self.keys['r'] = RemoteKey('r', 'Repl', 'keypress/instantreplay', 4, 1)
+        self.keys['*'] = RemoteKey('*', 'Star', 'keypress/info', 4, 10)
 
         # arrow keys
-        self.keys['KEY_UP'] = RemoteKey('KEY_UP', '^', 'up', 7, 7)
-        self.keys['KEY_LEFT'] = RemoteKey('KEY_LEFT', '<', 'left', 10, 1)
-        self.keys['\n'] = RemoteKey('\n', 'OK!', 'select', 10, 6)
-        self.keys['KEY_RIGHT'] = RemoteKey('KEY_RIGHT', '>', 'right', 10, 13)
-        self.keys['KEY_DOWN'] = RemoteKey('KEY_DOWN', 'v', 'down', 13, 7)
+        self.keys['KEY_UP'] = RemoteKey('KEY_UP', '^', 'keypress/up', 7, 7)
+        self.keys['KEY_LEFT'] = RemoteKey('KEY_LEFT', '<', 'keypress/left', 10, 1)
+        self.keys['\n'] = RemoteKey('\n', 'OK!', 'keypress/select', 10, 6)
+        self.keys['KEY_RIGHT'] = RemoteKey('KEY_RIGHT', '>', 'keypress/right', 10, 13)
+        self.keys['KEY_DOWN'] = RemoteKey('KEY_DOWN', 'v', 'keypress/down', 13, 7)
 
         # third row
-        self.keys['<'] = RemoteKey('<', '<<', 'rev', 16, 1)
-        self.keys['p'] = RemoteKey('p', 'P', 'play', 16, 7)
-        self.keys['>'] = RemoteKey('>', '>>', 'fwd', 16, 12)
+        self.keys['<'] = RemoteKey('<', '<<', 'keypress/rev', 16, 1)
+        self.keys['p'] = RemoteKey('p', 'P', 'keypress/play', 16, 7)
+        self.keys['>'] = RemoteKey('>', '>>', 'keypress/fwd', 16, 12)
 
 def draw_key(stdscr, key, pressed=False):
     color = 1 if not pressed else 2
@@ -92,11 +92,11 @@ def search_loop(stdscr, base_url):
                 cur_x -= 1
                 stdscr.addstr(22, cur_x, " ")
                 stdscr.move(22, cur_x)
-                request_url = base_url + 'Backspace'
+                request_url = base_url + 'keypress/Backspace'
         else:
             stdscr.addstr(22, cur_x, letter)
             cur_x += 1
-            request_url = base_url + 'Lit_' + letter
+            request_url = base_url + 'keypress/Lit_' + letter
         requests.post(request_url)
 
 def remote_loop(stdscr, remote):
