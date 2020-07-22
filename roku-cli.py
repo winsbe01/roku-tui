@@ -3,6 +3,15 @@
 import requests
 import time
 import curses
+from configparser import ConfigParser
+from pathlib import Path
+
+class RokuConfig:
+
+    def __init__(self, config_file):
+        config = ConfigParser()
+        config.read(Path(config_file).expanduser())
+        self.ip = config['general']['roku_ip']
 
 class RemoteKey:
 
@@ -122,7 +131,7 @@ def main(stdscr, ip):
     stdscr.clear()
 
     # create the remote
-    remote = RokuRemote(ip)
+    remote = RokuRemote(config.ip)
 
     status(stdscr)
 
@@ -138,5 +147,6 @@ def init_curses():
 
             
 if __name__ == '__main__':
-    ip = '192.168.1.1' # this is the ip of your roku
-    curses.wrapper(main, ip)
+    config_file = '~/.config/roku/roku.config'
+    config = RokuConfig(config_file)
+    curses.wrapper(main, config)
