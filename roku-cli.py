@@ -76,7 +76,11 @@ def draw_rect_key(stdscr, y, x, text, colors):
     stdscr.addstr(y + 2, x, owf.format('-' * iw))
 
     # draw the inside
-    stdscr.addstr(y + 1, x + 1, iwf.format(text), curses.color_pair(colors))
+    if colors == 1:
+        stdscr.addstr(y + 1, x + 1, iwf.format(text))
+    elif colors == 2:
+        stdscr.addstr(y + 1, x + 1, iwf.format(text), curses.A_STANDOUT)
+        
 
 def status(stdscr):
     stdscr.addstr(20, 1, "~*~ roku-cli ~*~")
@@ -139,8 +143,7 @@ def main(stdscr, ip):
 
 def init_curses():
     # set up colors
-    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.use_default_colors()
 
     # clear the screen and hide the cursor
     curses.curs_set(False)
