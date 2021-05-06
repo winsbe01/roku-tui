@@ -26,6 +26,8 @@ be interpreted literally and sent to the Roku.
 
 To exit typing mode, press `ENTER` or `ESC`.
 
+NOTE: this doesn't work with all text interfaces.
+
 ## install
 Replace the default IP address in `roku.config` with the IP address of 
 the Roku, then run:
