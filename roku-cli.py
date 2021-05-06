@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import requests
+import urllib.request
 import time
 import curses
 from configparser import ConfigParser
@@ -59,7 +59,7 @@ def press_key(stdscr, key, base_url):
     draw_key(stdscr, key, True)
     stdscr.refresh()
     request_url = base_url + key.endpoint
-    requests.post(request_url)
+    urllib.request.urlopen(request_url, b'')
     time.sleep(0.1)
 
 def draw_rect_key(stdscr, y, x, text, colors):
@@ -110,7 +110,7 @@ def search_loop(stdscr, base_url):
             stdscr.addstr(22, cur_x, letter)
             cur_x += 1
             request_url = base_url + 'keypress/Lit_' + letter
-        requests.post(request_url)
+        urllib.request.urlopen(request_url, b'')
 
 def remote_loop(stdscr, remote):
     while 1:
