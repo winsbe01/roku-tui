@@ -109,6 +109,8 @@ def search_loop(stdscr, base_url):
         else:
             stdscr.addstr(22, cur_x, letter)
             cur_x += 1
+            if letter == ' ':
+                letter = '%20'
             request_url = base_url + 'keypress/Lit_' + letter
         urllib.request.urlopen(request_url, b'')
 
