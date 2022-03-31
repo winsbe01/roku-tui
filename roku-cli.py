@@ -159,7 +159,7 @@ def remote_loop(stdscr, remote):
         elif c == 'q':
             break
 
-def main(stdscr, ip):
+def main(stdscr, config):
 
     init_curses()
     stdscr.clear()
@@ -207,9 +207,12 @@ def init_run(config_file):
         with open(str(config_file), 'w') as cf:
             config.write(cf)
             
-if __name__ == '__main__':
+def startup():
     config_file = Path('~/.config/roku/roku.config').expanduser()
     if not config_file.exists():
         init_run(config_file)
     config = RokuConfig(config_file)
     curses.wrapper(main, config)
+
+if __name__ == '__main__':
+    startup()
