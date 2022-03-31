@@ -1,6 +1,10 @@
 # roku-tui
 a command line TUI remote for Roku
 
+## install and run
+`me@computer ~$ python3 -m pip install roku-tui`
+`me@computer ~$ roku-tui`
+
 ## basic usage
 Keys on the left map to standard Roku remote buttons on the right
 * `h` -> Home
