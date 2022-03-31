@@ -1,4 +1,4 @@
-# roku-cli
+# roku-tui
 a command line TUI remote for Roku
 
 ## basic usage
@@ -13,6 +13,7 @@ Keys on the left map to standard Roku remote buttons on the right
 * `<` -> Rewind
 * `>` -> Fast-Forward
 
+For help inside the application, type '?'.
 To quit the application, type `q`.
 
 ## typing mode
@@ -27,14 +28,3 @@ be interpreted literally and sent to the Roku.
 To exit typing mode, press `ENTER` or `ESC`.
 
 NOTE: this doesn't work with all text interfaces.
-
-## install
-Replace the default IP address in `roku.config` with the IP address of 
-the Roku, then run:
-
-```
-make
-sudo make install
-```
-
-Program can be started using `roku`.
