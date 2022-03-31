@@ -115,6 +115,31 @@ def search_loop(stdscr, base_url):
             request_url = base_url + 'keypress/Lit_' + letter
         urllib.request.urlopen(request_url, b'')
 
+def help_toggle(stdscr):
+    
+    help_lines = ["'h' -> Home",
+                    "'b' -> Back",
+                    "'p' -> Play/Pause",
+                    "'r' -> Replay",
+                    "'*' -> Options (star key)",
+                    "arrow keys -> navigation",
+                    "ENTER -> OK",
+                    "'<' -> Rewind",
+                    "'>' -> Fast-Forward",
+                    "'/' -> Toggle typing mode (ENTER or ESC to leave)",
+                    "'?' -> Show this help screen",
+                    "'q' -> Quit",
+                    "",
+                    "Press any key to return to remote"]
+
+    stdscr.clear()
+    status(stdscr)
+    for i in range(1,len(help_lines)+1):
+        stdscr.addstr(i, 1, help_lines[i - 1])
+    stdscr.getch()  # wait for keypress
+    stdscr.clear()
+    status(stdscr)
+
 def remote_loop(stdscr, remote):
     while 1:
         # draw all the keys
@@ -129,6 +154,8 @@ def remote_loop(stdscr, remote):
             press_key(stdscr, remote.keys[c], remote.base_url)
         elif c == '/':
             search_loop(stdscr, remote.base_url)
+        elif c == '?':
+            help_toggle(stdscr)
         elif c == 'q':
             break
 
