@@ -5,12 +5,13 @@ import time
 import curses
 from configparser import ConfigParser
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 class RokuConfig:
 
     def __init__(self, config_file):
         config = ConfigParser()
-        config.read(Path(config_file).expanduser())
+        config.read(config_file)
         self.ip = config['general']['roku_ip']
 
 class RemoteKey:
@@ -150,8 +151,38 @@ def init_curses():
     # clear the screen and hide the cursor
     curses.curs_set(False)
 
+def get_device_name(base_url):
+    request_url = base_url + "query/device-info"
+    out = urllib.request.urlopen(request_url)
+    response = out.read().decode()
+    root = ET.fromstring(response)
+    return root.findall("model-name")[0].text
+
+def init_run(config_file):
+        print("Welcome to roku-cli!")
+        print("Please enter the IP address of the Roku device you wish to control.")
+        print("This can be found in the Settings > Network > About menu, ")
+        print("or via your router.")
+        print("You will only need to do this once.")
+        print("If you wish to change the IP, modify the file at ~/.config/roku/roku.config")
+        print()
+        ip = input("IP Address: ")
+        remote = RokuRemote(ip)
+
+        # if this returns, the IP is valid
+        device_name = get_device_name(remote.base_url)
+
+        # write the config, create the directory if necessary
+        if not config_file.parent.exists():
+            config_file.parent.mkdir()
+        config = ConfigParser()
+        config["general"] = {"roku_ip": ip}
+        with open(str(config_file), 'w') as cf:
+            config.write(cf)
             
 if __name__ == '__main__':
-    config_file = '~/.config/roku/roku.config'
+    config_file = Path('~/.config/roku/roku.config').expanduser()
+    if not config_file.exists():
+        init_run(config_file)
     config = RokuConfig(config_file)
     curses.wrapper(main, config)
