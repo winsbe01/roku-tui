@@ -7,12 +7,33 @@ from configparser import ConfigParser
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
+defaults = { "back": "b",
+             "home": "h",
+             "instantreplay": "r",
+             "info": "*",
+             "up": "KEY_UP",
+             "down": "KEY_DOWN",
+             "left": "KEY_LEFT",
+             "right": "KEY_RIGHT",
+             "select": "\n",
+             "rev": "<",
+             "fwd": ">",
+             "play": "p" }
+
+def keymap_override(keymap):
+    ret = keymap
+    for key, val in defaults.items():
+        if key not in ret.keys():
+            ret[key] = val
+    return ret
+
 class RokuConfig:
 
     def __init__(self, config_file):
         config = ConfigParser()
         config.read(config_file)
         self.ip = config['general']['roku_ip']
+        self.keymap = keymap_override(config["keymap"])
 
 class RemoteKey:
 
@@ -25,34 +46,44 @@ class RemoteKey:
 
 class RokuRemote:
 
-    def __init__(self, ip):
-        self.base_url = 'http://{}:8060/'.format(ip)
+    def __init__(self, config):
+        self.base_url = 'http://{}:8060/'.format(config.ip)
+        self.keymap = config.keymap
         self.setup_keys()
 
     def setup_keys(self):
         self.keys = {}
 
         # first row
-        self.keys['b'] = RemoteKey('b', 'Back', 'keypress/back', 1, 1)
-        self.keys['h'] = RemoteKey('h', 'Home', 'keypress/home', 1, 10)
+        for key, val in self.keymap.items():
+            self.__setattr__(key, val)
+
+        self.keys[self.back] = RemoteKey(self.back, 'Back', 'keypress/back', 1, 1)
+        self.keys[self.home] = RemoteKey(self.home, 'Home', 'keypress/home', 1, 10)
 
         # second row
-        self.keys['r'] = RemoteKey('r', 'Repl', 'keypress/instantreplay', 13, 1)
-        self.keys['*'] = RemoteKey('*', 'Star', 'keypress/info', 13, 10)
+        self.keys[self.instantreplay] = RemoteKey(self.instantreplay, 'Repl', 'keypress/instantreplay', 13, 1)
+        self.keys[self.info] = RemoteKey(self.info, 'Star', 'keypress/info', 13, 10)
 
         # arrow keys
-        self.keys['KEY_UP'] = RemoteKey('KEY_UP', '^', 'keypress/up', 4, 7)
-        self.keys['KEY_LEFT'] = RemoteKey('KEY_LEFT', '<', 'keypress/left', 7, 1)
-        self.keys['\n'] = RemoteKey('\n', 'OK!', 'keypress/select', 7, 6)
-        self.keys['KEY_RIGHT'] = RemoteKey('KEY_RIGHT', '>', 'keypress/right', 7, 13)
-        self.keys['KEY_DOWN'] = RemoteKey('KEY_DOWN', 'v', 'keypress/down', 10, 7)
+        self.keys[self.up] = RemoteKey(self.up, '^', 'keypress/up', 4, 7)
+        self.keys[self.left] = RemoteKey(self.left, '<', 'keypress/left', 7, 1)
+        self.keys[self.select] = RemoteKey(self.select, 'OK!', 'keypress/select', 7, 6)
+        self.keys[self.right] = RemoteKey(self.right, '>', 'keypress/right', 7, 13)
+        self.keys[self.down] = RemoteKey(self.down, 'v', 'keypress/down', 10, 7)
 
         # third row
-        self.keys['<'] = RemoteKey('<', '<<', 'keypress/rev', 16, 1)
-        self.keys['p'] = RemoteKey('p', 'P', 'keypress/play', 16, 7)
-        self.keys['>'] = RemoteKey('>', '>>', 'keypress/fwd', 16, 12)
+        self.keys[self.rev] = RemoteKey(self.rev, '<<', 'keypress/rev', 16, 1)
+        self.keys[self.play] = RemoteKey(self.play, 'P', 'keypress/play', 16, 7)
+        self.keys[self.fwd] = RemoteKey(self.fwd, '>>', 'keypress/fwd', 16, 12)
+
+        for key, val in self.keymap.items():
+            if val not in self.keys:
+                self.keys[val] = RemoteKey(key, "", f"keypress/{key}", 0, 0)
 
 def draw_key(stdscr, key, pressed=False):
+    if key.x == 0 and key.y == 0:
+        return
     color = 1 if not pressed else 2
     draw_rect_key(stdscr, key.y, key.x, key.label, color)
 
@@ -143,8 +174,8 @@ def help_toggle(stdscr):
 def remote_loop(stdscr, remote):
     while 1:
         # draw all the keys
-        for k in remote.keys:
-            draw_key(stdscr, remote.keys[k])
+        for key in remote.keys.values():
+            draw_key(stdscr, key)
 
         # listen for an input
         c = stdscr.getkey()
@@ -165,7 +196,7 @@ def main(stdscr, config):
     stdscr.clear()
 
     # create the remote
-    remote = RokuRemote(config.ip)
+    remote = RokuRemote(config)
 
     status(stdscr)
 
