@@ -33,7 +33,10 @@ class RokuConfig:
         config = ConfigParser()
         config.read(config_file)
         self.ip = config['general']['roku_ip']
-        self.keymap = keymap_override(config["keymap"])
+        if "keymap" in config:
+            self.keymap = keymap_override(config["keymap"])
+        else:
+            self.keymap = defaults
 
 class RemoteKey:
 
