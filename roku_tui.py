@@ -246,7 +246,10 @@ def startup():
     if not config_file.exists():
         init_run(config_file)
     config = RokuConfig(config_file)
-    curses.wrapper(main, config)
+    try:
+        curses.wrapper(main, config)
+    except curses.error as err:
+        print("Error with display — is your console window too small?")
 
 if __name__ == '__main__':
     startup()
